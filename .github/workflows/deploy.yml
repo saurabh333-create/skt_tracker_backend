@@ -34,14 +34,15 @@ jobs:
         run: scp -o StrictHostKeyChecking=no target/SKT_Construction-0.0.1-SNAPSHOT.jar root@69.62.81.7:/root/app/
 
       - name: Restart App on VPS (background)
-        run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 '
-          if [ -f /root/app/SKT_Construction-0.0.1-SNAPSHOT.jar ]; then
-          pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
-          cd /root/app
-          nohup java -jar SKT_Construction-0.0.1-SNAPSHOT.jar > /root/app/app.log 2>&1 &
-          disown
-          fi
-         '
+        run: |
+          ssh -o StrictHostKeyChecking=no root@69.62.81.7 "
+            if [ -f /root/app/SKT_Construction-0.0.1-SNAPSHOT.jar ]; then
+              pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
+              cd /root/app
+              nohup java -jar SKT_Construction-0.0.1-SNAPSHOT.jar > /root/app/app.log 2>&1 &
+              disown
+            fi
+          "
 
       - name: Show startup logs
         run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "tail -n 50 /root/app/app.log"
