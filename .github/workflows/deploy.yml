@@ -41,9 +41,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no root@69.62.81.7 '
             pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
             cd /root/app
-            nohup java -jar SKT_Construction-0.0.1-SNAPSHOT.jar > /root/app/app.log 2>&1 &
+            setsid java -jar SKT_Construction-0.0.1-SNAPSHOT.jar > /root/app/app.log 2>&1 &
             echo "App restarted"
-          ' 
+          '
 
       - name: Show startup logs
         run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "tail -n 50 /root/app/app.log"
