@@ -6,33 +6,37 @@ on:
       - master
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          host: 69.62.81.7
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            # Go to app folder
-            cd /root/app
+          java-version: '17'
+          distribution: 'temurin'
 
-            # Pull latest code
-            git reset --hard
-            git clean -fd
-            git pull origin master
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
 
-            # Build the project
-            mvn clean package -DskipTests
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-            # Kill any running instance of the Jar
-            pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
+      - name: Ensure app directory exists
+        run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "mkdir -p /root/app"
 
-            # Start the Jar in background with nohup
-            nohup java -jar SKT_Construction-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+      - name: Copy JAR to VPS
+        run: scp -o StrictHostKeyChecking=no target/SKT_Construction-0.0.1-SNAPSHOT.jar root@69.62.81.7:/root/app/
 
-            # Optional: show running Jar
-            ps aux | grep SKT_Construction-0.0.1-SNAPSHOT.jar
+      - name: Restart App on VPS
+        run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "
+          if [ -f /root/app/SKT_Construction-0.0.1-SNAPSHOT.jar ]; then
+          pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
+          nohup java -jar /root/app/SKT_Construction-0.0.1-SNAPSHOT.jar > /root/app/app.log 2>&1 &
+          fi
+          "
