@@ -38,13 +38,18 @@ jobs:
 
       - name: Restart App on VPS (background)
         run: |
-          ssh -o StrictHostKeyChecking=no root@69.62.81.7 "bash -c '
+          ssh -o StrictHostKeyChecking=no root@69.62.81.7 << 'EOF'
             pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
             cd /root/app
             nohup java -jar SKT_Construction-0.0.1-SNAPSHOT.jar > /root/app/app.log 2>&1 &
             sleep 2
-            pgrep -f SKT_Construction-0.0.1-SNAPSHOT.jar >/dev/null && echo \"App restarted\" || echo \"App failed to start\"
-          '"
+            if pgrep -f SKT_Construction-0.0.1-SNAPSHOT.jar >/dev/null; then
+              echo "App restarted successfully"
+            else
+              echo "App failed to start"
+            fi
+          EOF
+      
 
       - name: Show startup logs
         run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "tail -n 50 /root/app/app.log"
