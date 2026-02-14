@@ -33,10 +33,16 @@ jobs:
       - name: Copy JAR to VPS
         run: scp -o StrictHostKeyChecking=no target/SKT_Construction-0.0.1-SNAPSHOT.jar root@69.62.81.7:/root/app/
 
-      - name: Restart App on VPS
+      - name: Run JAR in foreground (debug)
         run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "
-          if [ -f /root/app/SKT_Construction-0.0.1-SNAPSHOT.jar ]; then
-          pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
-          nohup java -jar /root/app/SKT_Construction-0.0.1-SNAPSHOT.jar > /root/app/app.log 2>&1 &
-          fi
+          cd /root/app
+          java -jar SKT_Construction-0.0.1-SNAPSHOT.jar
           "
+
+      - name: Restart App on VPS (background)
+        run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "
+           if [ -f /root/app/SKT_Construction-0.0.1-SNAPSHOT.jar ]; then
+              pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
+              nohup java -jar /root/app/SKT_Construction-0.0.1-SNAPSHOT.jar > /root/app/app.log 2>&1 &
+            fi
+            "
