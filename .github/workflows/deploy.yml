@@ -23,7 +23,7 @@ jobs:
             # Pull latest code
             git reset --hard
             git clean -fd
-            git pull origin main
+            git pull origin master
 
             # Build the project
             mvn clean package -DskipTests
