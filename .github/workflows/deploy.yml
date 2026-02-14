@@ -1,0 +1,38 @@
+name: Deploy SKT Tracker Backend
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 69.62.81.7
+          username: root
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Go to app folder
+            cd /root/app
+
+            # Pull latest code
+            git reset --hard
+            git clean -fd
+            git pull origin main
+
+            # Build the project
+            mvn clean package -DskipTests
+
+            # Kill any running instance of the Jar
+            pkill -f SKT_Construction-0.0.1-SNAPSHOT.jar || true
+
+            # Start the Jar in background with nohup
+            nohup java -jar SKT_Construction-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+
+            # Optional: show running Jar
+            ps aux | grep SKT_Construction-0.0.1-SNAPSHOT.jar
