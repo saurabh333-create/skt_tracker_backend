@@ -52,4 +52,4 @@ jobs:
       
 
       - name: Show startup logs
-        run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "tail -n 50 /root/app/app.log"
+        run: ssh -o StrictHostKeyChecking=no root@69.62.81.7 "tail -n 500 /root/app/app.log"
